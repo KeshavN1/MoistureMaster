@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block main %}
+<style>
+
+    /* Table style */
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: #fff;
+    color: #2c3e50;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+    background-color: #27ae60;
+    color: #fff;
+}
+
+.table tbody + tbody {
+    border-top: 2px solid #dee2e6;
+}
+
+/* Table hover effect */
+.table tbody tr:hover {
+    background-color: #f4f9f4;
+}
+
+/* Table striped rows */
+.table tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa;
+}
+
+/* Responsive table */
+@media (max-width: 575.98px) {
+    .table-responsive-sm {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .table-responsive-md {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .table-responsive-lg {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .table-responsive-xl {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+}
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.main-chart {
+    max-width: 600px; /* Adjust as needed */
+}
+
+</style>
+
+    <div class="container pt-5">
+        <div class="row">
+            <h1>Prediction Results</h1>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Pressure</th>
+                        <th scope="col">Particulate Matter 1</th>
+                        <th scope="col">Particulate Matter 2</th>
+                        <th scope="col">Particulate Matter 3</th>
+                        <th scope="col">Atmospheric Moisture</th>
+                        <th scope="col">Humidity</th>
+                        <th scope="col">Luminosity</th>
+                        <th scope="col">Temperature</th>
+                        <th scope="col">Prediction</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in dataset %}
+                        <tr>
+                            <th scope="row">{{ data.id }}</th>
+                            <td>{{ data.pressure }}</td>
+                            <td>{{ data.particulate_matter1 }}</td>
+                            <td>{{ data.particulate_matter2 }}</td>
+                            <td>{{ data.particulate_matter3 }}</td>
+                            <td>{{ data.atmospheric_moisture }}</td>
+                            <td>{{ data.humidity }}</td>
+                            <td>{{ data.luminosity }}</td>
+                            <td>{{ data.temperature }}</td>
+                            <td>{{ data.classification }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Add a smaller chart container -->
+    <div class="container pt-5">
+        <div class="row">
+            <div class="col-md-6">
+                <h2>Average Parameter Values</h2>
+                <div class="chart-container">
+                    <canvas id="averageChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2>Classification Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="classificationChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row pt-3">
+            <div class="col-md-6">
+                <h2>Main Chart</h2>
+                <div class="chart-container main-chart">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h2>Pressure vs Temperature</h2>
+                <div class="chart-container">
+                    <canvas id="scatterChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Extract data from JSON and prepare for chart
+    var labels = [];
+    var pressures = [];
+    var pm1 = [];
+    var pm2 = [];
+    var pm3 = [];
+    var moisture = [];
+    var humidity = [];
+    var luminosity = [];
+    var temperature = [];
+
+    // Populate data arrays from dataset
+    {% for data in dataset %}
+        labels.push("{{ data.id }}");
+        pressures.push({{ data.pressure }});
+        pm1.push({{ data.particulate_matter1 }});
+        pm2.push({{ data.particulate_matter2 }});
+        pm3.push({{ data.particulate_matter3 }});
+        moisture.push({{ data.atmospheric_moisture }});
+        humidity.push({{ data.humidity }});
+        luminosity.push({{ data.luminosity }});
+        temperature.push({{ data.temperature }});
+    {% endfor %}
+
+    // Creating Chart.js line chart
+    var ctx = document.getElementById('myChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Pressure',
+                    data: pressures,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Particulate Matter 1',
+                    data: pm1,
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Particulate Matter 2',
+                    data: pm2,
+                    borderColor: 'rgb(54, 162, 235)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Particulate Matter 3',
+                    data: pm3,
+                    borderColor: 'rgb(255, 206, 86)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Atmospheric Moisture',
+                    data: moisture,
+                    borderColor: 'rgb(153, 102, 255)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Humidity',
+                    data: humidity,
+                    borderColor: 'rgb(255, 159, 64)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Luminosity',
+                    data: luminosity,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Temperature',
+                    data: temperature,
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+
+<script>
+    // Calculate average values
+    var avgPressure = 0;
+    var avgPM1 = 0;
+    var avgPM2 = 0;
+    var avgPM3 = 0;
+    var avgMoisture = 0;
+    var avgHumidity = 0;
+    var avgLuminosity = 0;
+    var avgTemperature = 0;
+
+    // Calculate averages
+    {% for data in dataset %}
+        avgPressure += {{ data.pressure }};
+        avgPM1 += {{ data.particulate_matter1 }};
+        avgPM2 += {{ data.particulate_matter2 }};
+        avgPM3 += {{ data.particulate_matter3 }};
+        avgMoisture += {{ data.atmospheric_moisture }};
+        avgHumidity += {{ data.humidity }};
+        avgLuminosity += {{ data.luminosity }};
+        avgTemperature += {{ data.temperature }};
+    {% endfor %}
+
+    var totalEntries = {{ dataset|length }};
+
+    avgPressure /= totalEntries;
+    avgPM1 /= totalEntries;
+    avgPM2 /= totalEntries;
+    avgPM3 /= totalEntries;
+    avgMoisture /= totalEntries;
+    avgHumidity /= totalEntries;
+    avgLuminosity /= totalEntries;
+    avgTemperature /= totalEntries;
+
+    // Creating Chart.js bar chart for average values
+    var avgCtx = document.getElementById('averageChart').getContext('2d');
+    var averageChart = new Chart(avgCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Pressure', 'Particulate Matter 1', 'Particulate Matter 2', 'Particulate Matter 3', 'Atmospheric Moisture', 'Humidity', 'Luminosity', 'Temperature'],
+            datasets: [{
+                label: 'Average Values',
+                data: [avgPressure, avgPM1, avgPM2, avgPM3, avgMoisture, avgHumidity, avgLuminosity, avgTemperature],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(201, 203, 207, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(201, 203, 207, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+<script>
+    // Calculate classification distribution
+    var classifications = {};
+    {% for data in dataset %}
+        var classification = "{{ data.classification }}";
+        if (classifications[classification]) {
+            classifications[classification] += 1;
+        } else {
+            classifications[classification] = 1;
+        }
+    {% endfor %}
+
+    // Extract labels and data for pie chart
+    var classificationLabels = Object.keys(classifications);
+    var classificationData = Object.values(classifications);
+
+    // Creating Chart.js pie chart for classification distribution
+    var pieCtx = document.getElementById('classificationChart').getContext('2d');
+    var classificationChart = new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: classificationLabels,
+            datasets: [{
+                label: 'Classification Distribution',
+                data: classificationData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(201, 203, 207, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(201, 203, 207, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(201, 203, 207, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(201, 203, 207, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(201, 203, 207, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(201, 203, 207, 1)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+<script>
+    // Extract data for scatter plot
+    var scatterData = [];
+    {% for data in dataset %}
+        scatterData.push({x: {{ data.pressure }}, y: {{ data.temperature }}});
+    {% endfor %}
+
+    // Creating Chart.js scatter plot for pressure vs temperature
+    var scatterCtx = document.getElementById('scatterChart').getContext('2d');
+    var scatterChart = new Chart(scatterCtx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Pressure vs Temperature',
+                data: scatterData,
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    title: {
+                        display: true,
+                        text: 'Pressure'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Temperature'
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+
+{% endblock %}
