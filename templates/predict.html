@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block main %}
+
+{% load static %}
+<style>
+body {
+    background-color: #f4f9f4;
+    color: #2c3e50;
+}
+
+h1, h5 {
+    color: #27ae60;
+}
+h1 {
+     font-size: 30px;
+     text-align: center;
+   }
+h4{
+    color: white;
+}
+
+.modal-content {
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: #27ae60;
+    color: white;
+}
+
+.btn-primary {
+    background-color: #27ae60;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+    color: white; /* Added line to change text color */
+}
+
+
+.btn-primary:hover {
+    background-color: #219150;
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-secondary {
+    background-color: #2c3e50;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.btn-secondary:hover {
+    background-color: #1f2a36;
+    transform: scale(1.05);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+table thead {
+    background-color: #27ae60;
+    color: white;
+}
+
+table tbody tr:nth-child(odd) {
+    background-color: #e9f7ef;
+}
+
+table tbody tr:nth-child(even) {
+    background-color: #f4f9f4;
+}
+
+label {
+    color: #27ae60;
+}
+
+.form-control {
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    box-shadow: 5px 5px 10px #d9d9d9, -5px -5px 10px #ffffff;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border: none;
+    outline: none;
+    background: linear-gradient(145deg, #e6e6e6, #ffffff);
+    box-shadow: 5px 5px 10px #d9d9d9, -5px -5px 10px #ffffff;
+}
+
+.form-control::placeholder {
+    color: #b2bec3;
+}
+
+.form-group label {
+    font-weight: bold;
+}
+
+.form-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.chat-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: #007bff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 999;
+}
+
+/* Chat bot window */
+.chat-window {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 300px;
+  max-height: 400px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow-y: auto;
+  display: none;
+  z-index: 998;
+}
+
+/* Chat bot messages */
+.chat-messages {
+  padding: 10px;
+}
+
+/* Chat bot input field */
+.chat-input {
+  width: calc(100% - 20px);
+  margin: 0 10px;
+  border: none;
+  border-top: 1px solid #ddd;
+  padding: 10px 0;
+  font-size: 16px;
+}
+
+/* Chat bot user message */
+.user-message {
+  color: blue;
+}
+
+/* Chat bot AI message */
+.ai-message {
+  color: green;
+}
+
+.chat-icon {
+        width: 50px; /* Adjust the width as needed */
+        height: 50px; /* Adjust the height as needed */
+        border-radius: 50%; /* Makes the image round */
+        overflow: hidden; /* Ensures the image stays within the rounded border */
+        display: flex; /* Enables centering */
+        justify-content: center; /* Horizontally centers the image */
+        align-items: center; /* Vertically centers the image */
+    }
+
+    .chat-icon img {
+        width: 100%; /* Makes sure the entire image is visible */
+        height: auto; /* Maintains aspect ratio */
+        object-fit: cover; /* Covers the entire container */
+    }
+    .logo {
+            width: 100px; /* Adjust the width as needed */
+            height: auto; /* Maintain aspect ratio */
+            display: block; /* Ensures centering */
+            margin: 0 auto; /* Centers the image horizontally */
+        }
+        .help-icon {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    background-color: green; /* Added */
+    color: white; /* Added */
+    padding: 10px; /* Added */
+    border-radius: 50%; /* Added */
+}
+
+.help-info {
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 20px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 300px;
+}
+.summary-image {
+    max-width: 100px; /* Adjust the width as needed */
+    max-height: 100px; /* Adjust the height as needed */
+    margin-top: 10px;
+}
+
+
+</style>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title" id="exampleModalLabel">Prediction Results</h1>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h1>Prediction Input:</h1>
+                <div>Pressure: <span id="p"></span></div>
+                <div>Particulate Matter 1: <span id="pm1"></span></div>
+                <div>Particulate Matter 2: <span id="pm2"></span></div>
+                <div>Particulate Matter 3: <span id="pm3"></span></div>
+                <div>Atmospheric Moisture: <span id="am"></span></div>
+                <div>Humidity: <span id="h"></span></div>
+                <div>Luminosity: <span id="l"></span></div>
+                <div>Temperature: <span id="t"></span></div>
+                <h5 class="pt-3">Prediction Soil Moisture:</h5>
+                <div id="prediction"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a class="btn btn-primary" href="/results" role="button">View DB</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="container pt-5">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Temperature</th>
+                <th>Humidity</th>
+                <th>Soil Moisture</th>
+            </tr>
+        </thead>
+        <tbody id="soilmoisture-data">
+            <!-- Display the soil moisture data here -->
+            {% for getdata in Soilmoisture %}
+            <tr>
+                <td>{{ getdata.temperature }}</td>
+                <td>{{ getdata.humidity }}</td>
+                <td>{{ getdata.moisture }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <style>
+        .message-cell {
+            text-align: center; /* Center align the message */
+            font-weight: bold; /* Make the message bold */
+            color: red; /* Set the color of the message */
+        }
+    </style>
+    
+    <script>
+        // Function to check soil moisture level and display alerts
+        function checkMoistureLevel() {
+            var moistureRows = document.querySelectorAll('#soilmoisture-data tr'); // Select all rows
+            
+            if (!moistureRows.length) {
+                console.error("Moisture rows not found.");
+                return;
+            }
+            
+            moistureRows.forEach(function(row) {
+                var moistureCell = row.querySelector('td:nth-child(3)'); // Select the moisture value cell
+                var moistureValue = parseFloat(moistureCell.innerText);
+                
+                if (isNaN(moistureValue)) {
+                    console.error("Moisture value is not a number.");
+                    return;
+                }
+    
+                var message = ""; // Variable to hold the message
+                var cropRecommendation = ""; // Variable to hold the crop recommendation
+                
+                if (moistureValue > 600 && moistureValue < 1000) {
+                message = "The soil is fully dry. Need to start giving water.";
+                cropRecommendation = "Recommended crop: Sorghum";
+            } else if (moistureValue < 370) {
+                message = "The water supply is high or the sensor is in water.";
+            } else if (moistureValue >= 370 && moistureValue <= 600) {
+                message = "The soil is humid";
+                cropRecommendation = "Recommended crop: Rice";
+            }
+            else if (moistureValue > 1000) {
+                message = "The senser is not dipped in soil";}
+                // Create a new row for the message
+                var messageRow = document.createElement("tr");
+                var messageCell = document.createElement("td");
+                messageCell.textContent = message;
+                messageCell.className = "message-cell"; // Add class for styling
+                messageCell.colSpan = 3; // Span the message cell across all columns
+                
+                // Append the message cell to the new row
+                messageRow.appendChild(messageCell);
+                
+                // Insert the new row after the current row
+                row.parentNode.insertBefore(messageRow, row.nextSibling);
+                
+                // Create a new row for the crop recommendation
+                var recommendationRow = document.createElement("tr");
+                var recommendationCell = document.createElement("td");
+                recommendationCell.textContent = cropRecommendation;
+                recommendationCell.className = "message-cell"; // Add class for styling
+                recommendationCell.colSpan = 3; // Span the recommendation cell across all columns
+                
+                // Append the recommendation cell to the new row
+                recommendationRow.appendChild(recommendationCell);
+                
+                // Insert the new row after the message row
+                messageRow.parentNode.insertBefore(recommendationRow, messageRow.nextSibling);
+            });
+        }
+    
+        // Call the function to check moisture level after a brief delay
+        setTimeout(checkMoistureLevel, 1000); // Adjust delay time as needed
+    </script>
+    
+    <img src="{% static 'images/moisturemaster.png' %}" class="logo" alt="MoistureMaster Logo">
+    <style>
+        
+        </style>
+    <div class="row justify-content-md-center">
+        <div class="col-md-4">
+            <h1>Moisture Master</h1>
+            
+<form action="" id="post-form">
+    {% csrf_token %}
+    <div id="firstHalfInputs">
+        <div class="form-group">
+            <label for="pressure">Pressure</label>
+            <input type="number" step="0.1" class="form-control" id="pressure" placeholder="Enter pressure" required>
+        </div>
+        <div class="form-group">
+            <label for="particulate_matter1">Particulate Matter 1</label>
+            <input type="number" step="0.1" class="form-control" id="particulate_matter1" placeholder="Enter particulate matter 1" required>
+        </div>
+        <div class="form-group">
+            <label for="particulate_matter2">Particulate Matter 2</label>
+            <input type="number" step="0.1" class="form-control" id="particulate_matter2" placeholder="Enter particulate matter 2" required>
+        </div>
+        <div class="form-group">
+            <label for="particulate_matter3">Particulate Matter 3</label>
+            <input type="number" step="0.1" class="form-control" id="particulate_matter3" placeholder="Enter particulate matter 3" required>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="showSecondHalf()">Next</button>
+    </div>
+    <div id="secondHalfInputs" style="display: none;">
+        <div class="form-group">
+            <label for="atmospheric_moisture">Atmospheric Moisture</label>
+            <input type="number" step="0.1" class="form-control" id="atmospheric_moisture" placeholder="Enter atmospheric moisture" required>
+        </div>
+        <div class="form-group">
+            <label for="humidity">Humidity</label>
+            <input type="number" step="0.1" class="form-control" id="humidity" placeholder="Enter humidity" required>
+        </div>
+        <div class="form-group">
+            <label for="luminosity">Luminosity</label>
+            <input type="number" step="0.1" class="form-control" id="luminosity" placeholder="Enter luminosity" required>
+        </div>
+        <div class="form-group">
+            <label for="temperature">Temperature</label>
+            <input type="number" step="0.1" class="form-control" id="temperature" placeholder="Enter temperature" required>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="showFirstHalf()">Previous</button>
+        <!-- <button type="submit" class="btn btn-primary">Submit</button> -->
+        <button type="submit" value="Submit" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Submit</button>
+            
+    </div>
+</form>
+<div class="help-icon" id="helpIcon">ℹ️</div>
+<div class="help-info" id="helpInfo">
+    <span class="close-btn" id="closeBtn">✖️</span>
+<p><strong>Project Summary:</strong></p>
+<p>This project involves soil moisture testing using IoT (Internet of Things) sensors and prediction using machine learning algorithms. IoT sensors are deployed in the field to continuously monitor soil moisture levels. The collected data is then processed and analyzed using machine learning techniques to predict future soil moisture trends. These predictions can help farmers make informed decisions about crop selection, irrigation scheduling, and other agricultural practices to optimize crop yield and resource usage.</p>
+<img src="{% static 'images/node.png' %}" alt="Soil Moisture Sensor" class="summary-image">
+</div>
+    <script>
+   const helpIcon = document.getElementById('helpIcon');
+const helpInfo = document.getElementById('helpInfo');
+const closeBtn = document.getElementById('closeBtn');
+
+// Function to toggle help info box visibility
+function toggleHelpInfo() {
+    if (helpInfo.style.display === 'block') {
+        helpInfo.style.display = 'none';
+    } else {
+        helpInfo.style.display = 'block';
+    }
+}
+
+// Toggle help info box visibility when help icon is clicked
+helpIcon.addEventListener('click', () => {
+    toggleHelpInfo();
+});
+
+// Close help info box when clicking close button
+closeBtn.addEventListener('click', () => {
+    helpInfo.style.display = 'none';
+});
+
+</script>
+<!-- Modal -->
+<div class="modal fade" id="userTypeModal" tabindex="-1" role="dialog" aria-labelledby="userTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="userTypeModalLabel">Welcome to MoistureMaster!</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Please select who you are:</p>
+                <form id="userTypeForm">
+                    <div class="form-group">
+                        <label for="userType">I am a:</label>
+                        <select class="form-control" id="userType" required>
+                            <option value="" disabled selected>Select</option>
+                            <option value="student">Student</option>
+                            <option value="researcher">Researcher</option>
+                            <option value="farmer">Farmer</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="submitUserType()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI bot  -->
+<div class="chat-icon" onclick="toggleChat()">
+    <img src="{% static 'images/chatbot.png' %}" alt="Chat Icon">
+  </div>
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-messages" id="chatMessages"></div>
+    <input type="text" class="chat-input" id="userInput" placeholder="Type your message...">
+  </div>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    
+ // Handle form submission
+ $(document).on('submit', '#post-form', function(e) {
+            e.preventDefault();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "predict:submit_prediction" %}',
+                data: {
+                    
+                    pressure: $('#pressure').val(),
+                    particulate_matter1: $('#particulate_matter1').val(),
+                    particulate_matter2: $('#particulate_matter2').val(),
+                    particulate_matter3: $('#particulate_matter3').val(),
+                    atmospheric_moisture: $('#atmospheric_moisture').val(),
+                    humidity: $('#humidity').val(),
+                    luminosity: $('#luminosity').val(),
+                    temperature: $('#temperature').val(),
+                    csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val(),
+                    action: 'post'
+                },
+                success: function(json) {
+                    document.forms["post-form"].reset();
+                    document.getElementById("prediction").innerHTML = json['result']
+                    document.getElementById("p").innerHTML = json['pressure']
+                    document.getElementById("pm1").innerHTML = json['particulate_matter1']
+                    document.getElementById("pm2").innerHTML = json['particulate_matter2']
+                    document.getElementById("pm3").innerHTML = json['particulate_matter3']
+                    document.getElementById("am").innerHTML = json['atmospheric_moisture']
+                    document.getElementById("h").innerHTML = json['humidity']
+                    document.getElementById("l").innerHTML = json['luminosity']
+                    document.getElementById("t").innerHTML = json['temperature']
+                    
+                },
+                error: function(xhr, errmsg, err) {}
+            });
+        });
+        
+    function showSecondHalf() {
+        document.getElementById("firstHalfInputs").style.display = "none";
+        document.getElementById("secondHalfInputs").style.display = "block";
+    }
+
+    function showFirstHalf() {
+        document.getElementById("firstHalfInputs").style.display = "block";
+        document.getElementById("secondHalfInputs").style.display = "none";
+    }
+
+    $(document).ready(function() {
+// Function to fetch and update data
+function fetchData() {
+    $.ajax({
+        type: 'GET',
+        url: '/showmoisture/',
+        success: function(data) {
+            console.log('Received data:', data);
+
+            // Check if data is not empty
+            if (Object.keys(data).length === 0 && data.constructor === Object) {
+                console.log('Received empty data');
+                return;
+            }
+
+            // Clear existing table rows
+            $('#soilmoisture-data').empty();
+
+            // Append new table row with received data
+            $('#soilmoisture-data').append(
+                '<tr>' +
+                '<td>' + data.temperature + '</td>' +
+                '<td>' + data.humidity + '</td>' +
+                '<td>' + data.moisture + '</td>' +
+                '</tr>'
+            );
+        },
+        error: function(xhr, errmsg, err) {
+            console.error('Error fetching data:', errmsg);
+        }
+    });
+}
+
+// Call fetchData initially and then every 5 seconds
+fetchData();
+setInterval(fetchData, 5000);
+  });
+
+  $(document).ready(function() {
+        // Check if the flag is set in local storage
+        var modalShown = localStorage.getItem('modalShown');
+
+        // If the modalShown flag is not set, show the modal
+        if (!modalShown) {
+            $('#userTypeModal').modal('show');
+        }
+
+        // When the modal is closed, set the flag in local storage
+        $('#userTypeModal').on('hidden.bs.modal', function () {
+            localStorage.setItem('modalShown', 'true');
+        });
+
+        // Remove the flag when the page is reloaded
+        window.addEventListener('beforeunload', function() {
+            localStorage.removeItem('modalShown');
+        });
+    });
+
+
+      // Toggle chat window visibility
+  function toggleChat() {
+    var chatWindow = document.getElementById("chatWindow");
+    chatWindow.style.display = (chatWindow.style.display === "none" || chatWindow.style.display === "") ? "block" : "none";
+  }
+  
+  // Function to handle user input and bot responses
+  document.getElementById("userInput").addEventListener("keyup", function(event) {
+    if (event.key === "Enter") {
+      var userInput = this.value.trim().toLowerCase();
+      var chatMessages = document.getElementById("chatMessages");
+      var newMessage = document.createElement("div");
+      newMessage.textContent = "YOU: " + userInput;
+      newMessage.classList.add("user-message");
+      chatMessages.appendChild(newMessage);
+      var response = getBotResponse(userInput);
+      newMessage = document.createElement("div");
+      newMessage.textContent = "AI: " + response;
+      newMessage.classList.add("ai-message");
+      chatMessages.appendChild(newMessage);
+      this.value = "";
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  });
+  
+  
+  // Function to get bot response based on user input
+  function getBotResponse(userInput) {
+    if (userInput === "hello") {
+      return "Hello! How can I help you?";
+    } else if (userInput.includes("temperature")) {
+      return "The current temperature is 25°C.";
+    } else if (userInput.includes("humidity")) {
+      return "The humidity level is 60%.";
+    } else if (userInput.includes("soil moisture")) {
+      return "The soil moisture is at an optimal level.";
+    } else if (userInput.includes("weather")) {
+      return "The weather forecast for today is sunny.";
+    } else if (userInput.includes("plant")) {
+      return "I can help you with plant care tips.";
+    } else if (userInput.includes("watering")) {
+      return "Your plants should be watered twice a week.";
+    } else if (userInput.includes("fertilizer")) {
+      return "Use a balanced fertilizer for your plants.";
+    } else if (userInput.includes("pest")) {
+      return "You can use neem oil to control pests on your plants.";
+    } else if (userInput.includes("light")) {
+      return "Ensure your plants get adequate sunlight for healthy growth.";
+    } else if (userInput.includes("pruning")) {
+      return "Prune dead or overgrown branches to maintain plant health.";
+    } else {
+      return "I'm sorry, I couldn't understand. How else can I assist you?";
+    }
+}
+
+</script>
+{% endblock %}
